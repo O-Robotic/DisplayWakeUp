@@ -115,13 +115,43 @@ void WakeDisplayWithDefaultMode(const DisplayTarget displayTarget, const Display
     )
 }
 
-int main(int argc, char** argv)
+void CreateConsole()
 {
+    FILE* stream;
+
+    AllocConsole();
+    freopen_s(&stream, "CONOUT$", "w+", stdout);
+    freopen_s(&stream, "CONOUT$", "w+", stderr);
+}
+
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+{
+    (void)hInstance;
+    (void)hPrevInstance;
+    (void)pCmdLine;
+    (void)nCmdShow;
+
+    const int argc = __argc;
+    WCHAR** const argv = __wargv;
+
     bool bUsePreferredRes = true;
-    
+    bool bShowConsole = true;
+
     if (argc > 1)
-        if (_stricmp(argv[1], "--min") == 0)
-            bUsePreferredRes = false;
+    {
+        for (size_t i = 1; i < argc; i++)
+        {
+            const WCHAR* const pArg = argv[i];
+
+            if (lstrcmpiW(pArg, L"--min") == 0)
+                bUsePreferredRes = false;
+            else if (lstrcmpiW(pArg, L"--no-console") == 0)
+                bShowConsole = false;
+        }
+    }
+
+    if (bShowConsole)
+        CreateConsole();
 
     winrt::init_apartment();
 
